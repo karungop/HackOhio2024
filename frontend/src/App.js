@@ -51,9 +51,14 @@ function App() {
         }
       });
       console.log(response.data); // Handle the response from Flask
+      const aiMessage = { role: 'assistant', content: response.data };
+
+      // Add AI's response to the conversation
+      setConversation((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error uploading the file:', error);
     }
+    setMessage('');
   };  
 
 
