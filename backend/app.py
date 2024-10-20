@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from openai import OpenAI
 from werkzeug.utils import secure_filename
+import PyPDF2 
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -45,13 +46,26 @@ vectorizer.fit(df['title'].tolist() + df['description'].tolist())  # Fit on titl
 client = OpenAI(api_key='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')  # Ensure to use your actual API key
 
 
-# Function to query OpenAI API for file analysis
-def analyze_file_with_openai(file_path):
-    # Send the file to OpenAI for analysis (using OpenAI API or embeddings)
-    with open(file_path, 'rb') as f:
-        response = client.files.create(file=f)
-        # Assuming you're using OpenAI's file-based API, adjust as needed
-    return response
+# Function to extract text from the uploaded PDF using PyPDF2
+def extract_text_from_pdf(file_path):
+    pdf_reader = PyPDF2.PdfReader(file_path)
+    text = ""
+    for page_num in range(len(pdf_reader.pages)):
+        text += pdf_reader.pages[page_num].extract_text()
+    return text
+
+
+# Function to query OpenAI API to determine completed classes
+def query_openai_for_classes(pdf_text):
+    # Send the extracted text to OpenAI for analysis
+    response = client.chat_completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are an academic advisor analyzing completed classes."},
+            {"role": "user", "content": f"Here is a student's transcript: {pdf_text}. List all the completed courses."}
+        ]
+    )
+    return response.choices[0].message.content
 
 # File upload endpoint
 @app.route('/upload', methods=['POST'])
@@ -71,7 +85,18 @@ def upload_file():
         file.save(file_path)
 
         # Now send the file to OpenAI for analysis
-        openai_response = analyze_file_with_openai(file_path)
+        # Extract text from the PDF using PyPDF2
+        pdf_text = extract_text_from_pdf(file_path)
+
+        # Append the transcript (pdf_text) to the conversation history
+        conversation_history.append({"role": "user", "content": f"Here is my transcript: {pdf_text}"})
+
+        # Send the extracted text to OpenAI for class determination
+        openai_response = query_openai_for_classes(pdf_text)
+
+        # Append OpenAI's response to the conversation history
+        conversation_history.append({"role": "assistant", "content": openai_response})
+
 
         # Return the analysis result
         return jsonify({"response": openai_response}), 200
