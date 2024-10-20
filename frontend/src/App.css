@@ -12,48 +12,12 @@ body, html {
   color: #333;
 }
 
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #A5A5A5, #F8F9FA); /* OSU gray */
-  padding: 30px;
-}
-
 h1 {
   font-size: 2.8rem;
   color: #bb0000; /* OSU scarlet */
   margin-bottom: 25px;
   text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
   letter-spacing: 1px;
-}
-
-/* Chat box */
-.chat-box {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 85vh;
-  width: 90%;
-  max-width: 1200px;
-  background-color: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Chat history */
-.chat-history {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding-right: 10px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
 }
 
 .chat-message {
@@ -65,6 +29,7 @@ h1 {
   border-radius: 20px;
   max-width: 75%;
   transition: background-color 0.3s ease;
+  white-space: pre-wrap;
 }
 
 .chat-message.user {
@@ -95,50 +60,95 @@ h1 {
 .chat-input {
   display: flex;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 10px; /* Less space above */
   position: relative;
 }
 
-/* Loading animation for ellipsis */
-.loading {
+/* File Upload Component */
+.drag-drop-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 10px;
-  height: 48px;
+  width: 100%;
+  height: 70px; /* Increased height for better aesthetics */
+  border: 2px dashed #bb0000; /* OSU scarlet */
+  border-radius: 10px;
+  margin-bottom: 10px; /* Space above input */
+  background-color: #fff;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  font-size: 0.9rem;
 }
+
+.drag-drop-container:hover {
+  background-color: #f8d7da; /* Subtle scarlet tint */
+  border-color: #bb0000;
+}
+
+.drag-drop-container p {
+  color: #bb0000;
+  margin: 0;
+  font-weight: 500;
+}
+
+.drag-drop-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.drag-drop-container li {
+  margin: 5px 0;
+  color: #333;
+  font-size: 0.85rem;
+}
+
+/* Dotted border when file is being dragged over */
+.drag-drop-container.drag-active {
+  border-color: #bb0000;
+  background-color: #ffe5e5;
+}
+
+/* New button using the same styles as the old one */
+.drag-drop-container button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; /* Full width */
+  height: 100%; /* Match height of the container */
+  background-color: transparent; /* Transparent to show the dotted border */
+  border: none;
+  padding: 0; /* No extra padding */
+  cursor: pointer;
+  font-size: inherit; /* Inherit font size */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Same transitions */
+}
+
+.drag-drop-container button:hover {
+  background-color: #f8d7da; /* Subtle scarlet tint on hover */
+  border-color: #bb0000; /* Match border color on hover */
+}
+
+/* Apply the same hover styles to the button */
+.drag-drop-container button:focus {
+  outline: none; /* Remove default outline on focus */
+}
+
+.drag-drop-container button:active {
+  background-color: #ffe5e5; /* Same effect when active */
+}
+
 
 .ellipsis {
   width: 10px;
   height: 10px;
   margin: 0 4px;
-  background-color: #bb0000; /* OSU scarlet */
+  background-color: #bb0000;
   border-radius: 50%;
   animation: bounce 0.4s infinite alternate;
 }
 
-@keyframes bounce {
-  0% {
-    transform: translateY(5px);
-  }
-  100% {
-    transform: translateY(-5px);
-  }
-}
-
-.ellipsis:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.ellipsis:nth-child(2) {
-  animation-delay: 0.1s;
-}
-
-.ellipsis:nth-child(3) {
-  animation-delay: 0.2s;
-}
-
-/* Styling for message input */
 .message-input {
   width: 100%;
   border-radius: 15px;
@@ -153,79 +163,144 @@ h1 {
   transition: all 0.3s ease;
 }
 
-/* Focus effect for the message input */
-.message-input:focus {
-  border-color: #bb0000; /* OSU scarlet */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #A5A5A5, #F8F9FA); /* OSU gray */
+  padding: 30px;
+}
+
+/* Heading with modern font and styling */
+.chat-heading {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #bb0000; /* OSU scarlet */
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1.5px;
+  font-family: 'Roboto', sans-serif; /* Modern font */
+}
+
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 85vh;
+  width: 95%;
+  max-width: 1400px; /* Increased max width */
   background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Adding a subtle box shadow on focus */
-.message-input:focus {
-  box-shadow: 0 0 8px rgba(187, 0, 0, 0.3); /* Scarlet shadow */
+.chat-history {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-.send-button {
-  background-color: #bb0000; /* OSU scarlet */
+/* Modified upload container: taller and aligned */
+.drag-drop-container {
+  width: 30%;  /* Reduced width */
+  padding: 20px;  /* Increased height */
+  border: 2px dashed #bb0000;  /* OSU scarlet */
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 15px;  /* Space between upload and input */
+  cursor: pointer;
+}
+
+.drag-drop-container p {
+  color: #bb0000;
+  margin: 0;
+  font-weight: 500;
+  text-overflow: ellipsis;  /* Handle long file names */
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.drag-drop-container:hover {
+  background-color: #f8d7da;  /* Subtle scarlet tint */
+  border-color: #bb0000;
+}
+
+/* Input area */
+.chat-input {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.message-input {
+  width: 100%;
+  border-radius: 15px;
+  padding: 15px;
+  font-size: 1.1rem;
+  border: 1px solid #cbd5e0;
+  background-color: #f8fafc;
+  outline: none;
+  resize: none;
+  margin-right: 10px;
+  height: 60px;
+  transition: all 0.3s ease;
+}
+
+.send-btn {
+  background-color: #bb0000;
   color: white;
   font-size: 1.1rem;
   padding: 14px 20px;
   border: none;
   border-radius: 15px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.send-button:hover {
-  background-color: #9a0000; /* Darker scarlet */
-  transform: scale(1.05);
+/* Loading dots container */
+.loading {
+  display: flex;
+  align-items: center; /* Vertically centers the dots */
+  justify-content: center; /* Horizontally centers the dots */
+  height: 50px; /* Adjust the height to match the AI response message box */
 }
 
-.send-button:active {
-  background-color: #7a0000; /* Even darker scarlet */
-}
-
-/* Drag and drop container styles */
-.drag-drop-container {
-  width: 80%;
-  max-width: 600px;
-  padding: 20px;
-  border: 2px dashed #bb0000; /* OSU scarlet */
-  border-radius: 10px;
-  text-align: center;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
-}
-
-.drag-drop-container:hover {
-  background-color: #ffe5e5; /* Light scarlet */
-}
-
-.drag-drop-container p {
-  color: #333;
-  margin: 0;
-}
-
-.drag-drop-container ul {
-  list-style: none;
-  padding: 0;
-}
-
-.drag-drop-container li {
-  margin: 10px 0;
-  color: #bb0000; /* OSU scarlet */
-  font-weight: bold;
-}
-
-.drag-drop-container button {
+/* Individual dots */
+.ellipsis {
+  width: 12px; /* Dot size */
+  height: 12px; /* Dot size */
+  margin: 0 5px; /* Space between dots */
   background-color: #bb0000; /* OSU scarlet */
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  margin-top: 15px;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: 50%; /* Circular shape */
+  animation: bounce 0.6s infinite ease-in-out; /* Bounce animation */
 }
 
-.drag-drop-container button:hover {
-  background-color: #9a0000; /* Darker scarlet */
+/* Apply different animation delays for wave effect */
+.ellipsis:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.ellipsis:nth-child(2) {
+  animation-delay: 0.2s; /* Delay for wave effect */
+}
+
+.ellipsis:nth-child(3) {
+  animation-delay: 0.4s; /* Delay for wave effect */
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px); /* Moderate bounce height */
+  }
 }

@@ -3,7 +3,6 @@ import axios from 'axios';
 import './App.css';
 import { useDropzone } from 'react-dropzone';
 
-
 function App() {
   const [message, setMessage] = useState('');
   const [conversation, setConversation] = useState([
@@ -12,10 +11,10 @@ function App() {
       content: "Hello! I'm your AI Academic Advisor, and I'm excited to help you with any questions about the CSE curriculum here at OSU! Feel free to ask away!",
     },
   ]);
-  const [loading, setLoading] = useState(false); // New loading state
-  const chatEndRef = useRef(null);  // Reference to the end of the chat history
+  const [loading, setLoading] = useState(false);
+  const chatEndRef = useRef(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]); // State for uploaded files
 
-  // Scroll to the bottom when conversation updates
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -24,72 +23,63 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;  // Do nothing if the message is empty
-  
-    // Add user message to the conversation
+    if (!message.trim()) return;
+
     const newMessage = { role: 'user', content: message };
     setConversation([...conversation, newMessage]);
-  
-    // Clear the input field immediately
+
     setMessage('');
-  
-    setLoading(true); // Set loading to true while fetching AI response
-  
+    setLoading(true);
+
     try {
       const res = await axios.post('http://127.0.0.1:5000/chat', { message });
       const aiMessage = { role: 'assistant', content: res.data.response };
-  
-      // Add AI's response to the conversation
       setConversation((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error fetching the AI response', error);
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
-  };  
+  };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {  // Enter without Shift key
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
   };
 
-  const [uploadedFiles, setUploadedFiles] = useState([]);
- const { getRootProps, getInputProps } = useDropzone({
-   onDrop: (acceptedFiles) => {
-     setUploadedFiles(acceptedFiles);
-   },
- });
- 
- // Function to upload the file to Flask backend
- const handleUpload = async () => {
-   const formData = new FormData(); // Create FormData object
-   formData.append('file', uploadedFiles[0]); // Append the file to the form data
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      setUploadedFiles(acceptedFiles);
+    },
+  });
+
+  const handleUpload = async () => {
+    if (uploadedFiles.length === 0) return; // Prevent upload if no files
+
+    const formData = new FormData();
+    formData.append('file', uploadedFiles[0]);
     try {
-     const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
-       headers: {
-         'Content-Type': 'multipart/form-data'
-       }
-     });
-     console.log(response.data); // Handle the response from Flask
-     const aiMessage = { role: 'assistant', content: response.data };
+      const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const aiMessage = { role: 'assistant', content: response.data.response };
+      setConversation((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error uploading the file:', error);
+    }
+    setUploadedFiles([]); // Clear uploaded files after upload
+    setMessage('');
+  };
 
-
-     // Add AI's response to the conversation
-     setConversation((prev) => [...prev, aiMessage]);
-   } catch (error) {
-     console.error('Error uploading the file:', error);
-   }
-   setMessage('');
- }; 
-
-
-
+  const uploadedFileName = uploadedFiles.length > 0 ? uploadedFiles[0].name : 'Upload your transcript here';
 
   return (
     <div className="chat-container">
-      <h1>AI Academic Advisor</h1>
+      <h1>AdvisorAI</h1>
       <div className="chat-box">
         <div className="chat-history">
           {conversation.map((msg, index) => (
@@ -97,7 +87,7 @@ function App() {
               <p>{msg.content}</p>
             </div>
           ))}
-          {loading && ( // Show loading indicator when loading
+          {loading && (
             <div className="chat-message assistant loading">
               <span className="ellipsis"></span>
               <span className="ellipsis"></span>
@@ -106,30 +96,27 @@ function App() {
           )}
           <div ref={chatEndRef} />
         </div>
+
+        {/* Render only the Upload File button styled like the Upload Transcript button */}
+        <div className={`drag-drop-container ${isDragActive ? 'drag-active' : ''}`} {...getRootProps()}>
+          <input {...getInputProps()} />
+          <p>{uploadedFileName}</p>
+          <div onClick={handleUpload}>
+            <p></p>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="chat-input">
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}  // Listen for Enter key press
-            placeholder="Ask about a course..."
-            rows="3"
+            onKeyDown={handleKeyDown}
             className="message-input"
+            placeholder="Ask something..."
           />
-          <button type="submit" className="send-button">Send</button>
+          <button type="submit" className="send-btn">Send</button>
         </form>
       </div>
-
-      <div className="drag-drop-container" {...getRootProps()}>
-       <input {...getInputProps()} />
-       <p>Drag and drop your transcript here or click to browse.</p>
-       <ul>
-         {uploadedFiles.map((file) => (
-           <li key={file.name}>{file.name}</li>
-         ))}
-       </ul>
-       <button onClick={handleUpload}>Upload File</button>
-     </div>
-
     </div>
   );
 }
